@@ -27,12 +27,17 @@ Nodo *crearNodo(const char *nombre, int x, int y) {
         // Copiar el nombre del nodo
         strncpy(nuevoNodo->nombre, nombre, sizeof(nuevoNodo->nombre) - 1);
         nuevoNodo->nombre[sizeof(nuevoNodo->nombre) - 1] = '\0';
+
         // Asignar las coordenadas
         nuevoNodo->coordenadaX = x;
         nuevoNodo->coordenadaY = y;
+
         // Inicializar conexiones como NULL y numConexiones como 0
         nuevoNodo->conexiones = NULL;
         nuevoNodo->numConexiones = 0;
+
+        // Establecer si se ha visitado el nodo
+        nuevoNodo->visitado=0;
     }
     return nuevoNodo;
 }
@@ -55,40 +60,46 @@ void agregarConexion(Nodo *nodo, Nodo *conexion, int distanciaXY) {
 }
 
 
-// Función para recorrer el grafo a partir de un nodo dado
 void recorrerGrafo(Nodo *nodo) {
     // Marcar el nodo como visitado
     nodo->visitado = 1;
     
     // Imprimir información del nodo
     printf("Nombre: %s\n", nodo->nombre);
-    printf("\tCoordenadas: (%d, %d)\n", nodo->coordenadaX, nodo->coordenadaY);
-    printf("\tCamino mas corto: \n");
+    printf("\tEstado actual: %d\n", nodo->visitado);
     
-    int caminoMasCorto=nodo->conexiones[0]->distanciaXY;
-    Nodo *opcionATomar=nodo->conexiones[0]->nodo;;
+    int caminoMasCorto = nodo->conexiones[0]->distanciaXY;
+    Nodo *opcionATomar = nodo->conexiones[0]->nodo;
 
     for (int i = 1; i < nodo->numConexiones; i++) {
         printf("\t- %s (distanciaXY: %d)\n", nodo->conexiones[i]->nodo->nombre, nodo->conexiones[i]->distanciaXY);
         
-        if (nodo->conexiones[i]->distanciaXY < caminoMasCorto){
-            caminoMasCorto=nodo->conexiones[i]->distanciaXY;
-            opcionATomar=nodo->conexiones[i]->nodo;
+        if (nodo->conexiones[i]->nodo->visitado==0 && (nodo->conexiones[i]->distanciaXY <= caminoMasCorto)) {
+            caminoMasCorto = nodo->conexiones[i]->distanciaXY;
+            opcionATomar = nodo->conexiones[i]->nodo;
+
+            printf("\t\tNodo a tomar: %s\n", opcionATomar->nombre);
+            printf("\t\tEstado actual: %d\n",opcionATomar->visitado);
         }
     }
 
 
-    recorrerGrafo(opcionATomar);
-    
-    //printf("Opcion a tomar por ser mas corto: %d\n", caminoMasCorto);
-    //if (opcionATomar != NULL) {
-    //    printf("Nodo a tomar: %s\n", opcionATomar->nombre);
-    //    printf("\tCoordenadas: (%d, %d)\n", opcionATomar->coordenadaX, opcionATomar->coordenadaY);
-    //} else {
-    //    printf("No hay opción a tomar.\n");
-    //}
+    if (opcionATomar != NULL) {
+        printf("\n\tOpcion %s a tomar por ser mas corto: %d. Estado actual: %d\n", 
+            opcionATomar->nombre,caminoMasCorto,opcionATomar->visitado
+        );
 
+        if(strcmp(opcionATomar->nombre, "I") != 0) {
+            printf("\tCumple la condicion recursiva...");
+            //recorrerGrafo(opcionATomar); // Llamada recursiva aquí
+        }
+
+        printf("\n\n");
+    } else {
+        printf("No hay opción a tomar.\n");
+    }
 }
+
 
 
 int main() {
@@ -109,7 +120,7 @@ int main() {
     Nodo *nodoN = crearNodo("N", 13, 13);
 
 
-        // Establecer conexiones entre los nodos
+    // Establecer conexiones entre los nodos
     //NODO A
     agregarConexion(nodoA, nodoB, 9); 
     agregarConexion(nodoA, nodoE, 15); 
@@ -195,6 +206,12 @@ int main() {
 
 
     recorrerGrafo(nodoE);
+    recorrerGrafo(nodoG);
+    recorrerGrafo(nodoK);
+    recorrerGrafo(nodoJ);
+    recorrerGrafo(nodoA);
+    recorrerGrafo(nodoB);
+
 
     return 0;
 }
