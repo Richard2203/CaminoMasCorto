@@ -4,23 +4,24 @@
 
 #define TOTAL_NODOS 14  
 int nodosRecorridos = 1;
+int contador=14;
+ 
 
-// Definición de la estructura de conexión
 typedef struct Conexion {
     struct Nodo *nodo;
     int distanciaXY;
 } Conexion;
 
-// Definición de la estructura del nodo
+
 typedef struct Nodo {
     char nombre[50];
     int coordenadaX;
     int coordenadaY;
-    Conexion **conexiones; // Arreglo dinámico de punteros a Conexion
-    Conexion **conexionesProhibidos; // Arreglo dinamico de punteros a Conexiones visitadas
-    int numConexiones; // Número de conexiones
+    Conexion **conexiones; 
+    Conexion **conexionesProhibidos; 
+    int numConexiones; 
     int numConexionesProhibidas;
-    int visitado; // Marca para evitar ciclos en el recorrido
+    int visitado;
     int bandera;
 } Nodo;
 
@@ -28,26 +29,20 @@ typedef struct Nodo {
 Nodo *crearNodo(const char *nombre, int x, int y) {
     Nodo *nuevoNodo = (Nodo *)malloc(sizeof(Nodo));
     if (nuevoNodo != NULL) {
-        // Copiar el nombre del nodo
+        
         strncpy(nuevoNodo->nombre, nombre, sizeof(nuevoNodo->nombre) - 1);
         nuevoNodo->nombre[sizeof(nuevoNodo->nombre) - 1] = '\0';
 
-        // Asignar las coordenadas
         nuevoNodo->coordenadaX = x;
         nuevoNodo->coordenadaY = y;
 
-        // Inicializar conexiones como NULL y numConexiones como 0
         nuevoNodo->conexiones = NULL;
         nuevoNodo->numConexiones = 0;
-
-        // Inicializar conexionesProhibidas como NULL y numConexionesProhibidas como 0
+        
         nuevoNodo->conexionesProhibidos=NULL;
         nuevoNodo->numConexionesProhibidas = 0;
 
-        //Establecer bandera indicando que no se ha tocado el nodo
         nuevoNodo->bandera=1;
-
-        // Establecer si se ha visitado el nodo
         nuevoNodo->visitado=0;
     }
     return nuevoNodo;
@@ -55,16 +50,15 @@ Nodo *crearNodo(const char *nombre, int x, int y) {
 
 // Función para agregar una conexión a un nodo
 void agregarConexion(Nodo *nodo, Nodo *conexion, int distanciaXY) {
-    // Incrementar el tamaño del arreglo de conexiones
     nodo->numConexiones++;
     nodo->conexiones = (Conexion **)realloc(nodo->conexiones, sizeof(Conexion *) * nodo->numConexiones);
+    
     if (nodo->conexiones != NULL) {
-        // Crear una nueva conexión y asignar el nodo y el distanciaXY
         Conexion *nuevaConexion = (Conexion *)malloc(sizeof(Conexion));
+
         if (nuevaConexion != NULL) {
             nuevaConexion->nodo = conexion;
             nuevaConexion->distanciaXY = distanciaXY;
-            // Agregar la nueva conexión al final del arreglo
             nodo->conexiones[nodo->numConexiones - 1] = nuevaConexion;
         }
     }
@@ -73,16 +67,14 @@ void agregarConexion(Nodo *nodo, Nodo *conexion, int distanciaXY) {
 
 // Funcion para agregar nodo Prohibido
 void agregarConexionProhibida(Nodo *nodo, Nodo *conexion) {
-    // Incrementar el tamaño del arreglo de conexiones
     nodo->numConexionesProhibidas++;
     nodo->conexionesProhibidos = (Conexion **)realloc(nodo->conexionesProhibidos, sizeof(Conexion *) * nodo->numConexionesProhibidas);
 
     if (nodo->conexionesProhibidos != NULL) {
-        // Crear una nueva conexión y asignar el nodo y el distanciaXY
         Conexion *nuevaConexion = (Conexion *)malloc(sizeof(Conexion));
+
         if (nuevaConexion != NULL) {
             nuevaConexion->nodo = conexion;
-            // Agregar la nueva conexión al final del arreglo
             nodo->conexionesProhibidos[nodo->numConexionesProhibidas - 1] = nuevaConexion;
         }
     }
@@ -96,23 +88,25 @@ int esProhibido(Nodo *nodoActual, Nodo *posibleProhibido) {
     return 0;
 }
 
-
-void recorrerGrafo(Nodo *nodo, Nodo *nodoAnterior) {
-    // Marcar el nodo como visitado
+void recorrerGrafo(Nodo *nodo) {
     nodo->visitado = 1;
-    int caminoMasCorto = __INT_MAX__;
-    Nodo *opcionATomar = NULL;
-
-    // Imprimir información del nodo
+    int caminoMasCorto=__INT_MAX__;
+    Nodo *opcionATomar=NULL;
+    
     printf("Nombre: %s\n", nodo->nombre);
     printf("\tEstado actual: %d\n", nodo->visitado);
 
-    for (int i = 0; i < nodo->numConexiones; i++) {
-        if (!nodo->conexiones[i]->nodo->visitado) {
-            if (nodo->numConexionesProhibidas == 0)
+    for(int i=0; i<nodo->numConexiones;i++){
+        if(!nodo->conexiones[i]->nodo->visitado){
+            
+            if(nodo->numConexionesProhibidas==0){
                 opcionATomar = nodo->conexiones[i]->nodo;
-            else if (!esProhibido(nodo, nodo->conexiones[i]->nodo))
+                caminoMasCorto = nodo->conexiones[i]->distanciaXY;
+            }
+            else if(!esProhibido(nodo, nodo->conexiones[i]->nodo )){
                 opcionATomar = nodo->conexiones[i]->nodo;
+                caminoMasCorto = nodo->conexiones[i]->distanciaXY;
+            }
         }
         if (strcmp(nodo->conexiones[i]->nodo->nombre, "E") == 0 && nodosRecorridos == TOTAL_NODOS) {
             opcionATomar = nodo->conexiones[i]->nodo;
@@ -122,58 +116,59 @@ void recorrerGrafo(Nodo *nodo, Nodo *nodoAnterior) {
 
     for (int i = 1; i < nodo->numConexiones; i++) {
         printf("\t- %s (distanciaXY: %d)\n", nodo->conexiones[i]->nodo->nombre, nodo->conexiones[i]->distanciaXY);
-
-        if (nodo->conexiones[i]->nodo->visitado == 0 && (nodo->conexiones[i]->distanciaXY <= caminoMasCorto)) {
-            if (nodo->numConexionesProhibidas == 0) {
-                opcionATomar = nodo->conexiones[i]->nodo;
-                caminoMasCorto = nodo->conexiones[i]->distanciaXY;
-            } else if (!esProhibido(nodo, nodo->conexiones[i]->nodo)) {
+        
+        if (nodo->conexiones[i]->nodo->visitado==0 && (nodo->conexiones[i]->distanciaXY <= caminoMasCorto)) {
+            if(nodo->numConexionesProhibidas==0){
                 opcionATomar = nodo->conexiones[i]->nodo;
                 caminoMasCorto = nodo->conexiones[i]->distanciaXY;
             }
-
+            else if(!esProhibido(nodo, nodo->conexiones[i]->nodo )){
+                opcionATomar = nodo->conexiones[i]->nodo;
+                caminoMasCorto = nodo->conexiones[i]->distanciaXY;
+            }
+            
+            
             printf("\t\tNodo a tomar: %s\n", opcionATomar->nombre);
-            printf("\t\tEstado actual: %d\n", opcionATomar->visitado);
+            printf("\t\tEstado actual: %d\n",opcionATomar->visitado);
         }
     }
 
-    // FIN
+
+    //                                      FIN
     if (strcmp(opcionATomar->nombre, "E") == 0 && nodosRecorridos == TOTAL_NODOS) {
         printf("Camino TOTALMENTE RECORRIDO...");
-        return;
     }
 
+
+    //
     if (opcionATomar != NULL) {
-        nodosRecorridos += nodo->bandera--;
+        nodosRecorridos+=nodo->bandera--;
 
-        printf("\n\tOpcion %s a tomar por ser mas corto: %d. Estado actual: %d\n",
-               opcionATomar->nombre, caminoMasCorto, opcionATomar->visitado);
+        printf("\n\tOpcion %s a tomar por ser mas corto: %d. Estado actual: %d\n", 
+            opcionATomar->nombre, caminoMasCorto, opcionATomar->visitado
+        );
 
-        printf("Bandera: %d, nodosRecorridos: %d", nodo->bandera, nodosRecorridos);
-
+        printf("Bandera: %d, nodosRecorridos: %d",nodo->bandera,nodosRecorridos);
+        
         printf("\tCumple la condicion recursiva...\n");
-        recorrerGrafo(opcionATomar, nodo); // Llamada recursiva aquí
-
+        recorrerGrafo(opcionATomar); 
+    
+        printf("\t\t\nContador: %d\n", --contador);
         nodosRecorridos--;
-        opcionATomar->bandera = 1;
-        opcionATomar->visitado = 0;
+        opcionATomar->bandera=1;
+        opcionATomar->visitado=0;
         agregarConexionProhibida(nodo, opcionATomar);
+
     } else {
         printf("No hay opción a tomar.\n");
-        if (nodoAnterior != NULL) {
-            printf("Regresando al nodo anterior: %s\n", nodoAnterior->nombre);
-            recorrerGrafo(nodoAnterior, NULL);
-        } else {
-            printf("No hay nodo anterior para regresar.\n");
-        }
     }
+
 }
 
 
 
-
 int main() {
-    // Crear nodos
+    //              CREACION DE NODOS
     Nodo *nodoA = crearNodo("A", 0, 0);
     Nodo *nodoB = crearNodo("B", 1, 1);
     Nodo *nodoC = crearNodo("C", 2, 2);
@@ -190,7 +185,7 @@ int main() {
     Nodo *nodoN = crearNodo("N", 13, 13);
 
 
-    // Establecer conexiones entre los nodos
+    //              CONEXIONES ENTRE NODOS
     //NODO A
     agregarConexion(nodoA, nodoB, 9); 
     agregarConexion(nodoA, nodoE, 15); 
@@ -254,8 +249,6 @@ int main() {
     agregarConexion(nodoK, nodoG, 14); 
     agregarConexion(nodoK, nodoJ, 6); 
     agregarConexion(nodoK, nodoN, 14); 
-    
-
 
     //NODO L
     agregarConexion(nodoL, nodoH, 17); 
@@ -275,10 +268,10 @@ int main() {
 
 
 
-    recorrerGrafo(nodoE, NULL);
+    // COMIENZO DEL PROGRAMA
+    recorrerGrafo(nodoE);
 
     
-    // Liberar memoria
     free(nodoA);
     free(nodoB);
     free(nodoC);
