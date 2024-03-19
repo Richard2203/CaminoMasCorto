@@ -3,6 +3,7 @@
 #include <string.h>
 
 #define TOTAL_NODOS 14  
+int nodosRecorridos = 0;
 
 // Definición de la estructura de conexión
 typedef struct Conexion {
@@ -16,8 +17,10 @@ typedef struct Nodo {
     int coordenadaX;
     int coordenadaY;
     Conexion **conexiones; // Arreglo dinámico de punteros a Conexion
+    
     int numConexiones; // Número de conexiones
     int visitado; // Marca para evitar ciclos en el recorrido
+    int bandera;
 } Nodo;
 
 // Función para crear un nuevo nodo
@@ -35,6 +38,9 @@ Nodo *crearNodo(const char *nombre, int x, int y) {
         // Inicializar conexiones como NULL y numConexiones como 0
         nuevoNodo->conexiones = NULL;
         nuevoNodo->numConexiones = 0;
+
+        //Establecer bandera indicando que no se ha tocado el nodo
+        nuevoNodo->bandera=1;
 
         // Establecer si se ha visitado el nodo
         nuevoNodo->visitado=0;
@@ -68,11 +74,15 @@ void recorrerGrafo(Nodo *nodo) {
     printf("Nombre: %s\n", nodo->nombre);
     printf("\tEstado actual: %d\n", nodo->visitado);
 
-    int caminoMasCorto;
-    Nodo *opcionATomar;
+    int caminoMasCorto=__INT_MAX__;
+    Nodo *opcionATomar=NULL;
     for(int i=0; i<nodo->numConexiones;i++){
         if(!nodo->conexiones[i]->nodo->visitado){
             caminoMasCorto = nodo->conexiones[i]->distanciaXY;
+            opcionATomar = nodo->conexiones[i]->nodo;
+            break;
+        }
+        if (strcmp(nodo->conexiones[i]->nodo->nombre, "E") == 0 && nodosRecorridos == TOTAL_NODOS) {
             opcionATomar = nodo->conexiones[i]->nodo;
             break;
         }
@@ -91,17 +101,26 @@ void recorrerGrafo(Nodo *nodo) {
     }
 
 
+    //                                      FIN
+    if (strcmp(opcionATomar->nombre, "E") == 0 && nodosRecorridos == TOTAL_NODOS) {
+        printf("Camino TOTALMENTE RECORRIDO...");
+    }
+
+
+    //
     if (opcionATomar != NULL) {
+        nodosRecorridos+=nodo->bandera--;
+
         printf("\n\tOpcion %s a tomar por ser mas corto: %d. Estado actual: %d\n", 
-            opcionATomar->nombre,caminoMasCorto,opcionATomar->visitado
+            opcionATomar->nombre, caminoMasCorto, opcionATomar->visitado
         );
 
-        if(strcmp(opcionATomar->nombre, "I") != 0) {
-            printf("\tCumple la condicion recursiva...");
-            //recorrerGrafo(opcionATomar); // Llamada recursiva aquí
-        }
+        printf("Bandera: %d, nodosRecorridos: %d",nodo->bandera,nodosRecorridos);
+        
+        printf("\tCumple la condicion recursiva...\n");
 
-        printf("\n\n");
+        if(!strcmp(opcionATomar->nombre,"H")==0)
+           recorrerGrafo(opcionATomar); // Llamada recursiva aquí
     } else {
         printf("No hay opción a tomar.\n");
     }
@@ -110,7 +129,7 @@ void recorrerGrafo(Nodo *nodo) {
 
 
 int main() {
-    // Crear algunos nodos de ejemplo
+    // Crear nodos
     Nodo *nodoA = crearNodo("A", 0, 0);
     Nodo *nodoB = crearNodo("B", 1, 1);
     Nodo *nodoC = crearNodo("C", 2, 2);
@@ -213,19 +232,23 @@ int main() {
 
 
     recorrerGrafo(nodoE);
-    recorrerGrafo(nodoG);
-    recorrerGrafo(nodoK);
-    recorrerGrafo(nodoJ);
-    recorrerGrafo(nodoA);
-    recorrerGrafo(nodoC);
-    recorrerGrafo(nodoD);
-    recorrerGrafo(nodoF);
-    recorrerGrafo(nodoI);
-    recorrerGrafo(nodoH);
-    recorrerGrafo(nodoL);
-    recorrerGrafo(nodoN);
-    recorrerGrafo(nodoM);
 
+    
+    // Liberar memoria
+    free(nodoA);
+    free(nodoB);
+    free(nodoC);
+    free(nodoD);
+    free(nodoE);
+    free(nodoF);
+    free(nodoG);
+    free(nodoH);
+    free(nodoI);
+    free(nodoJ);
+    free(nodoK);
+    free(nodoL);
+    free(nodoM);
+    free(nodoN);
 
     return 0;
 }
