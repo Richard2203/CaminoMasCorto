@@ -67,9 +67,16 @@ void recorrerGrafo(Nodo *nodo) {
     // Imprimir información del nodo
     printf("Nombre: %s\n", nodo->nombre);
     printf("\tEstado actual: %d\n", nodo->visitado);
-    
-    int caminoMasCorto = nodo->conexiones[0]->distanciaXY;
-    Nodo *opcionATomar = nodo->conexiones[0]->nodo;
+
+    int caminoMasCorto;
+    Nodo *opcionATomar;
+    for(int i=0; i<nodo->numConexiones;i++){
+        if(!nodo->conexiones[i]->nodo->visitado){
+            caminoMasCorto = nodo->conexiones[i]->distanciaXY;
+            opcionATomar = nodo->conexiones[i]->nodo;
+            break;
+        }
+    }
 
     for (int i = 1; i < nodo->numConexiones; i++) {
         printf("\t- %s (distanciaXY: %d)\n", nodo->conexiones[i]->nodo->nombre, nodo->conexiones[i]->distanciaXY);
@@ -210,7 +217,14 @@ int main() {
     recorrerGrafo(nodoK);
     recorrerGrafo(nodoJ);
     recorrerGrafo(nodoA);
-    recorrerGrafo(nodoB);
+    recorrerGrafo(nodoC);
+    recorrerGrafo(nodoD);
+    recorrerGrafo(nodoF);
+    recorrerGrafo(nodoI);
+    recorrerGrafo(nodoH);
+    recorrerGrafo(nodoL);
+    recorrerGrafo(nodoN);
+    recorrerGrafo(nodoM);
 
 
     return 0;
