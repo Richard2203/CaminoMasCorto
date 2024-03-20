@@ -5,7 +5,7 @@
 #define TOTAL_NODOS 14  
 int nodosRecorridos = 1;
 int contador=14;
- 
+int isSiguienteNodoOrigen=0;
 
 typedef struct Conexion {
     struct Nodo *nodo;
@@ -22,7 +22,6 @@ typedef struct Nodo {
     int numConexiones; 
     int numConexionesProhibidas;
     int visitado;
-    int bandera;
 } Nodo;
 
 // Función para crear un nuevo nodo
@@ -42,7 +41,6 @@ Nodo *crearNodo(const char *nombre, int x, int y) {
         nuevoNodo->conexionesProhibidos=NULL;
         nuevoNodo->numConexionesProhibidas = 0;
 
-        nuevoNodo->bandera=1;
         nuevoNodo->visitado=0;
     }
     return nuevoNodo;
@@ -88,7 +86,7 @@ int esProhibido(Nodo *nodoActual, Nodo *posibleProhibido) {
     return 0;
 }
 
-void recorrerGrafo(Nodo *nodo) {
+int recorrerGrafo(Nodo *nodo) {
     nodo->visitado = 1;
     int caminoMasCorto=__INT_MAX__;
     Nodo *opcionATomar=NULL;
@@ -102,14 +100,17 @@ void recorrerGrafo(Nodo *nodo) {
             if(nodo->numConexionesProhibidas==0){
                 opcionATomar = nodo->conexiones[i]->nodo;
                 caminoMasCorto = nodo->conexiones[i]->distanciaXY;
+                break;
             }
             else if(!esProhibido(nodo, nodo->conexiones[i]->nodo )){
                 opcionATomar = nodo->conexiones[i]->nodo;
                 caminoMasCorto = nodo->conexiones[i]->distanciaXY;
+                break;
             }
         }
         if (strcmp(nodo->conexiones[i]->nodo->nombre, "E") == 0 && nodosRecorridos == TOTAL_NODOS) {
             opcionATomar = nodo->conexiones[i]->nodo;
+            isSiguienteNodoOrigen=1;
             break;
         }
     }
@@ -127,40 +128,39 @@ void recorrerGrafo(Nodo *nodo) {
                 caminoMasCorto = nodo->conexiones[i]->distanciaXY;
             }
             
-            
             printf("\t\tNodo a tomar: %s\n", opcionATomar->nombre);
             printf("\t\tEstado actual: %d\n",opcionATomar->visitado);
         }
     }
 
 
-    //                                      FIN
-    if (strcmp(opcionATomar->nombre, "E") == 0 && nodosRecorridos == TOTAL_NODOS) {
-        printf("Camino TOTALMENTE RECORRIDO...");
-    }
-
-
     //
     if (opcionATomar != NULL) {
-        nodosRecorridos+=nodo->bandera--;
+        nodosRecorridos+=nodo->visitado;
 
         printf("\n\tOpcion %s a tomar por ser mas corto: %d. Estado actual: %d\n", 
             opcionATomar->nombre, caminoMasCorto, opcionATomar->visitado
         );
 
-        printf("Bandera: %d, nodosRecorridos: %d",nodo->bandera,nodosRecorridos);
+        printf("\tnodosRecorridos: %d\n", nodosRecorridos);
         
+        printf("\t\t\nContador: %d\n", contador--);
         printf("\tCumple la condicion recursiva...\n");
-        recorrerGrafo(opcionATomar); 
+
+
+        //                       FIN DE LA BUSQUEDA
+        if (isSiguienteNodoOrigen && nodosRecorridos == TOTAL_NODOS) {
+            printf("Camino TOTALMENTE RECORRIDO...");
+            return recorrerGrafo(opcionATomar) + caminoMasCorto; 
+        }
     
-        printf("\t\t\nContador: %d\n", --contador);
-        nodosRecorridos--;
-        opcionATomar->bandera=1;
-        opcionATomar->visitado=0;
-        agregarConexionProhibida(nodo, opcionATomar);
+        //nodosRecorridos--;
+        //opcionATomar->visitado=0;
+        //agregarConexionProhibida(nodo, opcionATomar);
 
     } else {
         printf("No hay opción a tomar.\n");
+        return 0;
     }
 
 }
@@ -269,7 +269,8 @@ int main() {
 
 
     // COMIENZO DEL PROGRAMA
-    recorrerGrafo(nodoE);
+    int longCaminoMasCorto = recorrerGrafo(nodoE);
+    printf("\n\n\tEl camino mas corto fue de: %d", longCaminoMasCorto);
 
     
     free(nodoA);
